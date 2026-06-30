@@ -25,15 +25,25 @@ CREATE TABLE Roles (
 
 CREATE TABLE Empleados (
     EmpleadoID INT PRIMARY KEY IDENTITY(1,1),
-    Nombre VARCHAR(100) NOT NULL,
-    CURP CHAR(18) UNIQUE NOT NULL,       -- Llave única de identidad operativa
-    RFC VARCHAR(13) UNIQUE NOT NULL,     -- RFC del empleado (Persona Física con homoclave)
+    Nombre VARCHAR(50) NOT NULL,
+    ApellidoPaterno VARCHAR(50) NOT NULL,
+    ApellidoMaterno VARCHAR(50) NOT NULL,
+    CURP CHAR(18) UNIQUE NOT NULL,
+    RFC CHAR(13) UNIQUE NOT NULL, -- Requerido para la estructura fiscal mexicana
     Email VARCHAR(100) UNIQUE NOT NULL,
-    Telefono VARCHAR(15),
-    FechaIngreso DATE NOT NULL DEFAULT GETDATE(),
-    Puesto VARCHAR(100),
-    SalarioBase DECIMAL(18,2) NOT NULL,  -- Entrada fundamental para algoritmos de nómina
-    Estatus VARCHAR(20) DEFAULT 'Activo' CHECK (Estatus IN ('Activo', 'Inactivo', 'Licencia'))
+    Telefono1 VARCHAR(15) NOT NULL,
+    Telefono2 VARCHAR(15),
+    FechaContratacion DATE NOT NULL,
+    AreaContratacion VARCHAR(100) NOT NULL, -- Departamento (oficinista, bodeguero, vendedor, etc.)
+    NSS CHAR(11) UNIQUE NOT NULL,          -- Número de Seguro Social
+    FechaAltaSalud DATE NOT NULL,          -- Alta en el servicio de salud
+    Direccion VARCHAR(150) NOT NULL,
+    Colonia VARCHAR(100) NOT NULL,
+    CodigoPostal CHAR(5) NOT NULL,
+    Ciudad VARCHAR(100) NOT NULL,
+    Estado VARCHAR(50) NOT NULL,
+    Estatus VARCHAR(20) DEFAULT 'Activo' CHECK (Estatus IN ('Activo', 'Inactivo', 'Pendiente_Eliminacion')),
+    SalarioBase DECIMAL(18,2) NOT NULL DEFAULT 0.00 -- Se conserva para el módulo de nóminas posterior
 );
 
 CREATE TABLE Usuarios (
@@ -47,7 +57,45 @@ CREATE TABLE Usuarios (
 );
 
 -- ==========================================
--- 3. CAPA COMERCIAL (PROVEEDORES Y CLIENTES)
+-- 3. CONTROL DE ACCESO: AUTORIZACIONES DE ELIMINACIÓN
+-- ==========================================
+-- (Movido aquí porque ya existen las tablas Usuarios y Empleados)
+
+CREATE TABLE AutorizacionesEliminacion (
+    AutorizacionID INT PRIMARY KEY IDENTITY(1,1),
+    TablaAfectada VARCHAR(30) NOT NULL CHECK (TablaAfectada IN ('Empleados', 'Clientes')),
+    RegistroID INT NOT NULL, -- El ID del empleado o cliente que se desea eliminar
+    UsuarioSolicitaID INT FOREIGN KEY REFERENCES Usuarios(UsuarioID) NOT NULL,
+    SupervisorID INT FOREIGN KEY REFERENCES Usuarios(UsuarioID), -- Quién aprueba
+    Estatus VARCHAR(20) DEFAULT 'Pendiente' CHECK (Estatus IN ('Pendiente', 'Aprobada', 'Rechazada')),
+    Motivo TEXT NOT NULL,
+    FechaSolicitud DATETIME DEFAULT GETDATE() NOT NULL,
+    FechaResolucion DATETIME
+);
+
+-- ==========================================
+-- 4. CAPA COMERCIAL (CLIENTES - ENTREGA 1)
+-- ==========================================
+
+CREATE TABLE Clientes (
+    ClienteID INT PRIMARY KEY IDENTITY(1,1),
+    RazonSocial_Nombre VARCHAR(150) NOT NULL, -- Soporta nombre personal o empresa
+    RFC VARCHAR(13) UNIQUE NOT NULL,
+    Email VARCHAR(100) UNIQUE NOT NULL,
+    Telefono1 VARCHAR(15) NOT NULL,
+    Telefono2 VARCHAR(15),
+    ContactoPrincipal VARCHAR(100),         -- Persona física de contacto en la empresa
+    Direccion VARCHAR(150) NOT NULL,
+    Colonia VARCHAR(100) NOT NULL,
+    CodigoPostal CHAR(5) NOT NULL,
+    Ciudad VARCHAR(100) NOT NULL,
+    Estado VARCHAR(50) NOT NULL,
+    FechaRegistro DATE DEFAULT GETDATE() NOT NULL,
+    Estatus VARCHAR(20) DEFAULT 'Activo' CHECK (Estatus IN ('Activo', 'Inactivo', 'Pendiente_Eliminacion'))
+);
+
+-- ==========================================
+-- 5. CAPA DE INSUMOS Y PROVEEDORES
 -- ==========================================
 
 CREATE TABLE Entidades (
@@ -60,10 +108,6 @@ CREATE TABLE Entidades (
     EmailContacto VARCHAR(100),
     Estatus BIT DEFAULT 1
 );
-
--- ==========================================
--- 4. CAPA MONETARIA Y LOGÍSTICA
--- ==========================================
 
 CREATE TABLE Monedas (
     MonedaID INT PRIMARY KEY IDENTITY(1,1),
@@ -92,7 +136,7 @@ CREATE TABLE InsumosCotizaciones (
 );
 
 -- ==========================================
--- 5. CAPA FINANCIERA (NÓMINAS DETALLADAS)
+-- 6. CAPA FINANCIERA (NÓMINAS DETALLADAS)
 -- ==========================================
 
 CREATE TABLE Nominas (
@@ -113,7 +157,7 @@ CREATE TABLE Nominas (
 );
 
 -- ==========================================
--- 6. CAPA OPERATIVA (PROYECTOS Y GANTT)
+-- 7. CAPA OPERATIVA (PROYECTOS Y GANTT)
 -- ==========================================
 
 CREATE TABLE Proyectos (
@@ -137,7 +181,7 @@ CREATE TABLE AsignacionProyectos (
 );
 
 -- ==========================================
--- 7. CAPA DE COMPRAS (HISTORIAL DE TRANSACCIONES)
+-- 8. CAPA DE COMPRAS (HISTORIAL DE TRANSACCIONES)
 -- ==========================================
 
 CREATE TABLE OrdenesCompra (
@@ -159,7 +203,7 @@ CREATE TABLE OrdenesCompraDetalle (
 );
 
 -- ==========================================
--- 8. CAPA DE INFRAESTRUCTURA Y AUDITORÍA
+-- 9. CAPA DE INFRAESTRUCTURA Y AUDITORÍA
 -- ==========================================
 
 CREATE TABLE AuditoriaLogs (
@@ -174,7 +218,7 @@ CREATE TABLE AuditoriaLogs (
 GO
 
 -- ===================================================================
--- 9. DISPARADORES DE AUDITORÍA AUTOMÁTICA (TRIGGERS)
+-- 10. DISPARADORES DE AUDITORÍA AUTOMÁTICA (TRIGGERS)
 -- ===================================================================
 
 -- Trigger para auditar cambios (UPDATES) en la tabla de Empleados
@@ -183,7 +227,6 @@ ON Empleados
 AFTER UPDATE
 AS
 BEGIN
-    -- Evita que se devuelvan mensajes de filas afectadas para optimizar rendimiento
     SET NOCOUNT ON;
 
     INSERT INTO AuditoriaLogs (TablaAfectada, Accion, UsuarioID, RegistroID, Detalles)
@@ -220,13 +263,6 @@ BEGIN
 END;
 GO
 
-INSERT INTO Roles (NombreRol, Descripcion)
-VALUES 
-('Administrador', 'Acceso total al sistema, configuraciones de seguridad y logs de auditoría.'),
-('Recursos Humanos', 'Gestión de empleados, modificación de salarios y generación de nóminas.'),
-('Operaciones', 'Gestión de proyectos, asignación de personal y seguimiento de cronograma.');
-GO
-
 -- ===================================================================
 -- 11. DISPARADORES DE AUDITORÍA (PROYECTOS)
 -- ===================================================================
@@ -251,4 +287,28 @@ BEGIN
     FROM inserted i
     INNER JOIN deleted d ON i.ProyectoID = d.ProyectoID;
 END;
+GO
+
+-- ===================================================================
+-- 12. POBLADO DE CATÁLOGOS BASE (ROLES INICIALES)
+-- ===================================================================
+
+INSERT INTO Roles (NombreRol, Descripcion)
+VALUES 
+('Administrador', 'Acceso total al sistema, configuraciones de seguridad y logs de auditoría.'),
+('Recursos Humanos', 'Gestión de empleados, modificación de salarios y generación de nóminas.'),
+('Operaciones', 'Gestión de proyectos, asignación de personal y seguimiento de cronograma.');
+GO
+
+-- ===================================================================
+-- 13. ÍNDICES DE OPTIMIZACIÓN
+-- ===================================================================
+
+-- Índices para búsquedas frecuentes de Usuarios/Empleados
+CREATE NONCLUSTERED INDEX IX_Empleados_Busqueda 
+ON Empleados (ApellidoPaterno, Ciudad, AreaContratacion);
+
+-- Índices para búsquedas frecuentes de Clientes
+CREATE NONCLUSTERED INDEX IX_Clientes_Busqueda 
+ON Clientes (RazonSocial_Nombre, Estado);
 GO
