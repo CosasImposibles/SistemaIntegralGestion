@@ -312,3 +312,43 @@ ON Empleados (ApellidoPaterno, Ciudad, AreaContratacion);
 CREATE NONCLUSTERED INDEX IX_Clientes_Busqueda 
 ON Clientes (RazonSocial_Nombre, Estado);
 GO
+
+-- Limpiamos registros huérfanos previos si es que quedó alguno de pruebas fallidas
+DELETE FROM Nominas WHERE EmpleadoID NOT IN (SELECT EmpleadoID FROM Empleados);
+DELETE FROM Usuarios WHERE EmpleadoID NOT IN (SELECT EmpleadoID FROM Empleados);
+GO
+
+-- Variables para capturar los IDs autogenerados en tiempo real
+DECLARE @JuanID INT;
+DECLARE @AnaID INT;
+
+-- 1. Insertar Primer Empleado (Juan) sin forzar el ID
+INSERT INTO Empleados (Nombre, ApellidoPaterno, ApellidoMaterno, CURP, RFC, Email, Telefono1, FechaContratacion, AreaContratacion, NSS, FechaAltaSalud, Direccion, Colonia, CodigoPostal, Ciudad, Estado, SalarioBase)
+VALUES 
+('Juan', 'Perez', 'Gomez', 'PEGA900101HDFRRN01', 'PEGA900101AA1', 'juan.perez@empresa.com', '5551234567', '2025-01-15', 'Operaciones', '12345678901', '2025-01-15', 'Av. Juarez 123', 'Centro', '72000', 'Puebla', 'Puebla', 25000.00);
+
+-- Capturamos el ID que SQL Server le asignó a Juan
+SET @JuanID = SCOPE_IDENTITY();
+
+-- 2. Insertar Segundo Empleado (Ana) sin forzar el ID
+INSERT INTO Empleados (Nombre, ApellidoPaterno, ApellidoMaterno, CURP, RFC, Email, Telefono1, FechaContratacion, AreaContratacion, NSS, FechaAltaSalud, Direccion, Colonia, CodigoPostal, Ciudad, Estado, SalarioBase)
+VALUES 
+('Ana', 'Lopez', 'Martinez', 'LOMA920202MDFRRN02', 'LOMA920202BB2', 'ana.lopez@empresa.com', '5559876543', '2025-02-01', 'Sistemas', '98765432102', '2025-02-01', 'Reforma 456', 'La Paz', '72160', 'Puebla', 'Puebla', 30000.00);
+
+-- Capturamos el ID que SQL Server le asignó a Ana
+SET @AnaID = SCOPE_IDENTITY();
+
+-- ===================================================================
+-- INSERCIONES EN TABLAS HIJAS USANDO LOS IDS CORRECTOS
+-- ===================================================================
+
+-- Insertar el usuario asociado a Juan (usando su rol correspondiente)
+INSERT INTO Usuarios (EmpleadoID, Username, PasswordHash, RolID, Activo)
+VALUES (@JuanID, 'admin_' + CAST(@JuanID AS VARCHAR(5)), 'HASH_SEGURO_EJEMPLO', 1, 1);
+
+-- Insertar nóminas asociadas a los IDs reales de la base de datos
+INSERT INTO Nominas (EmpleadoID, FechaPeriodo, DiasTrabajados, SueldoBruto, ISR_Retenido, IMSS_Obrero, TotalDeducciones, TotalNeto)
+VALUES 
+(@JuanID, GETDATE(), 15, 12500.00, 1500.00, 400.00, 1900.00, 10600.00),
+(@AnaID, GETDATE(), 15, 15000.00, 2100.00, 500.00, 2600.00, 12400.00);
+GO

@@ -242,16 +242,16 @@
                 </div>
 
                 <!-- MÓDULO: REPORTES (FUTURO) -->
-                <div class="modern-card" style="opacity: 0.7;">
+                <div class="modern-card">
                     <div class="module-icon">📈</div>
                     <h3>Reportes y Análisis</h3>
                     <p>
                         Dashboards ejecutivos, KPIs en tiempo real, exportación a PDF/Excel y análisis 
-                        predictivo. Próximamente disponible en la siguiente versión.
+                        predictivo. 
                     </p>
-                    <a href="#" class="btn-modern" style="pointer-events: none; opacity: 0.6;">
-                        Próximamente →
-                    </a>
+                    <asp:HyperLink ID="HyperLink1" runat="server" NavigateUrl="~/Reportes.aspx" CssClass="btn-modern">
+                         Acceder al Módulo →
+                    </asp:HyperLink>
                 </div>
 
             </div>

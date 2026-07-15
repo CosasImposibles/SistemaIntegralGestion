@@ -11,7 +11,7 @@ namespace SistemaIntegralGestion
 {
 
 
-    public partial class Index
+    public partial class Reportes
     {
 
         /// <summary>
@@ -24,57 +24,93 @@ namespace SistemaIntegralGestion
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
 
         /// <summary>
-        /// Control lnkUsuarios.
+        /// Control lnkRegresar.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink lnkUsuarios;
+        protected global::System.Web.UI.WebControls.HyperLink lnkRegresar;
 
         /// <summary>
-        /// Control lnkProveedores.
+        /// Control btnExportarExcel.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink lnkProveedores;
+        protected global::System.Web.UI.WebControls.Button btnExportarExcel;
 
         /// <summary>
-        /// Control lnkInsumos.
+        /// Control btnExportarPDF.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink lnkInsumos;
+        protected global::System.Web.UI.WebControls.Button btnExportarPDF;
 
         /// <summary>
-        /// Control lnkNominas.
+        /// Control litKpiNomina.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink lnkNominas;
+        protected global::System.Web.UI.WebControls.Literal litKpiNomina;
 
         /// <summary>
-        /// Control lnkProyectos.
+        /// Control litKpiProyectos.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink lnkProyectos;
+        protected global::System.Web.UI.WebControls.Literal litKpiProyectos;
 
         /// <summary>
-        /// Control HyperLink1.
+        /// Control litKpiImpuestos.
         /// </summary>
         /// <remarks>
         /// Campo generado automáticamente.
         /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink HyperLink1;
+        protected global::System.Web.UI.WebControls.Literal litKpiImpuestos;
+
+        /// <summary>
+        /// Control litJsonAreas.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litJsonAreas;
+
+        /// <summary>
+        /// Control litJsonProyectos.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litJsonProyectos;
+
+        /// <summary>
+        /// Control litJsonPrediccionMercado.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litJsonPrediccionMercado;
+
+        /// <summary>
+        /// Control litJsonProveedores.
+        /// </summary>
+        /// <remarks>
+        /// Campo generado automáticamente.
+        /// Para modificarlo, mueva la declaración del campo del archivo del diseñador al archivo de código subyacente.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litJsonProveedores;
     }
 }
